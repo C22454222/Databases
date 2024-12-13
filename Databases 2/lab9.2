@@ -1,0 +1,83 @@
+CREATE (dublin:Airport {city: 'Dublin', country: 'Ireland', code: 'DUB'})
+CREATE (cork:Airport {city: 'Cork', country: 'Ireland', code: 'ORK'})
+CREATE (london:Airport {city: 'London', country: 'UK', code: 'LHR'})
+CREATE (rome:Airport {city: 'Rome', country: 'Italy', code: 'FCO'})
+CREATE (moscow:Airport {city: 'Moscow', country: 'Russia', code: 'DME'})
+CREATE (hongkong:Airport {city: 'Hong Kong', country: 'China', code: 'HKG'})
+CREATE (amsterdam:Airport {city: 'Amsterdam', country: 'Holland', code: 'AMS'})
+CREATE (berlin:Airport {city: 'Berlin', country: 'Germany', code: 'TXL'})
+CREATE (paris:Airport {city: 'Paris', country: 'France', code: 'CDG'})
+CREATE (newyork:Airport {city: 'New York', country: 'USA', code: 'JFK'})
+CREATE (chicago:Airport {city: 'Chicago', country: 'USA', code: 'ORD'})
+CREATE (sao_paulo:Airport {city: 'Sao Paulo', country: 'Brazil', code: 'GRU'})
+CREATE (rio:Airport {city: 'Rio', country: 'Brazil', code: 'GIG'})
+
+CREATE (london)-[:CONNECTED_TO {time: 45, price: 150}]->(dublin)
+CREATE (rome)-[:CONNECTED_TO {time: 150, price: 400}]->(london)
+CREATE (rome)-[:CONNECTED_TO {time: 120, price: 500}]->(paris)
+CREATE (paris)-[:CONNECTED_TO {time: 60, price: 200}]->(dublin)
+CREATE (berlin)-[:CONNECTED_TO {time: 240, price: 900}]->(moscow)
+CREATE (paris)-[:CONNECTED_TO {time: 30, price: 100}]->(amsterdam)
+CREATE (berlin)-[:CONNECTED_TO {time: 120, price: 900}]->(dublin)
+CREATE (london)-[:CONNECTED_TO {time: 700, price: 1100}]->(newyork)
+CREATE (dublin)-[:CONNECTED_TO {time: 360, price: 800}]->(newyork)
+CREATE (dublin)-[:CONNECTED_TO {time: 50, price: 50}]->(cork)
+CREATE (dublin)-[:CONNECTED_TO {time: 150, price: 70}]->(rome)
+CREATE (dublin)-[:CONNECTED_TO {time: 480, price: 890}]->(chicago)
+CREATE (amsterdam)-[:CONNECTED_TO {time: 660, price: 750}]->(hongkong)
+CREATE (london)-[:CONNECTED_TO {time: 700, price: 1000}]->(hongkong)
+CREATE (dublin)-[:CONNECTED_TO {time: 90, price: 60}]->(amsterdam)
+CREATE (moscow)-[:CONNECTED_TO {time: 720, price: 1000}]->(newyork)
+CREATE (moscow)-[:CONNECTED_TO {time: 420, price: 500}]->(hongkong)
+CREATE (newyork)-[:CONNECTED_TO {time: 240, price: 430}]->(chicago)
+CREATE (dublin)-[:CONNECTED_TO {time: 900, price: 800}]->(sao_paulo)
+CREATE (sao_paulo)-[:CONNECTED_TO {time: 840, price: 650}]->(newyork)
+CREATE (rio)-[:CONNECTED_TO {time: 1200, price: 1100}]->(berlin)
+
+// Find all paths starting at Moscow and ending at Rio, traversing any number of CONNECTED_TO relationships.
+MATCH p = (moscow)-[:CONNECTED_TO*]->(rio)
+
+// Use the REDUCE function to calculate the total travel time for each path found.
+// Iterate over all relationships in the path `p`, summing up the `time` property.
+WITH p, REDUCE(totalTime = 0, r IN relationships(p) | totalTime + r.time) AS totalTime
+
+// Return the path and its corresponding total travel time.
+RETURN p, totalTime
+
+
+// Match all nodes (destinations) that are directly connected to Dublin by a CONNECTED_TO relationship.
+MATCH (dublin:Airport)-[r:CONNECTED_TO]->(destination:Airport)
+
+// Return the city of the destination, the price of the flight, and the travel time.
+RETURN destination.city AS Destination, r.price AS Price, r.time AS Time
+
+// Sort the results by the price in descending order.
+ORDER BY r.price DESC;
+
+
+// Match all destinations reachable from Chicago with exactly one hop (direct flight).
+MATCH (chicago)-[:CONNECTED_TO]->(firstHop:Airport)
+
+// Match destinations reachable from the first hop (a two-hop path starting from Chicago).
+MATCH (firstHop)-[:CONNECTED_TO]->(secondHop:Airport)
+
+// Return the first hop's city and the second hop's city as part of the two-hop path.
+RETURN firstHop.city AS FirstHop, secondHop.city AS SecondHop
+
+// Combine the results of the previous match with a query for direct flights from Chicago.
+UNION
+
+// Match destinations reachable from Chicago with exactly one hop (direct flight).
+MATCH (chicago)-[:CONNECTED_TO]->(destination:Airport)
+
+// For direct flights, return the destination city as the first hop and null for the second hop.
+RETURN destination.city AS FirstHop, NULL AS SecondHop;
+
+
+// Match all nodes (destinations) directly connected to London by a CONNECTED_TO relationship.
+// Filter the results to only include flights where the travel time is less than 240 minutes.
+MATCH (london)-[r:CONNECTED_TO]->(destination:Airport)
+WHERE r.time < 240
+
+// Return the destination city, travel time, and price of the flight.
+RETURN destination.city AS Destination, r.time AS Time, r.price AS Price;

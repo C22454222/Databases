@@ -1,0 +1,126 @@
+CREATE (e1:Person { name: "Mary", country: "Sweden", age: 29, sport: "Hockey" }),
+(e2:Person { name: "Emily", country: "Ireland", age: 19, sport: "Football" }),
+(e3:Person { name: "Mark", country: "Sweden", age: 23, sport: "Rugby" }),
+(e4:Person { name: "Joe", country: "Sweden", age: 32, sport: "Hockey" }),
+(e5:Person { name: "John", country: "Ireland", age: 31, sport: "Football" }),
+(e6:Person { name: "Peter", country: "France", age: 23, sport: "Rugby" }),
+(e7:Person { name: "Paul", country: "Sweden", age: 25, sport: "Hockey" }),
+(e8:Person { name: "Kevin", country: "Ireland", age: 17, sport: "Football" }),
+(e9:Person { name: "Patrick", country: "Sweden", age: 21, sport: "Rugby" }),
+(e10:Person { name: "Sarah", country: "Ireland", age: 35, sport: "Football" }),
+(e11:Person { name: "Julia", country: "Scotland", age: 28, sport: "Football" }),
+(e12:Person { name: "Hilary", country: "France", age: 24, sport: "Rugby" }),
+(e13:Person { name: "Francis", country: "France", age: 25, sport: "Football" }),
+(e14:Person { name: "Lisa", country: "Scotland", age: 25, sport: "Football" }),
+(e15:Person { name: "Bart", country: "Scotland", age: 25, sport: "Rugby" }),
+(e16:Person { name: "Denis", country: "Scotland", age: 34, sport: "Football" }),
+(e1)-[:FRIEND_OF]->(e2),(e1)-[:FRIEND_OF]->(e3),
+(e1)-[:FRIEND_OF]->(e4),(e1)-[:FRIEND_OF]->(e5),
+(e1)-[:FRIEND_OF]->(e7),(e1)-[:FRIEND_OF]->(e6),
+(e2)-[:FRIEND_OF]->(e13),(e2)-[:FRIEND_OF]->(e3),
+(e2)-[:FRIEND_OF]->(e14),(e2)-[:FRIEND_OF]->(e5),
+(e2)-[:FRIEND_OF]->(e5),(e2)-[:FRIEND_OF]->(e7),
+(e3)-[:FRIEND_OF]->(e10),(e3)-[:FRIEND_OF]->(e4),
+(e3)-[:FRIEND_OF]->(e14),(e3)-[:FRIEND_OF]->(e5),
+(e4)-[:FRIEND_OF]->(e10),(e4)-[:FRIEND_OF]->(e3),
+(e4)-[:FRIEND_OF]->(e11),(e4)-[:FRIEND_OF]->(e5),
+(e5)-[:FRIEND_OF]->(e13),(e5)-[:FRIEND_OF]->(e3),
+(e5)-[:FRIEND_OF]->(e14),(e5)-[:FRIEND_OF]->(e1),
+(e5)-[:FRIEND_OF]->(e8),(e5)-[:FRIEND_OF]->(e12),
+(e5)-[:FRIEND_OF]->(e9),(e5)-[:FRIEND_OF]->(e10),
+(e6)-[:FRIEND_OF]->(e14),(e6)-[:FRIEND_OF]->(e1),
+(e6)-[:FRIEND_OF]->(e8),(e6)-[:FRIEND_OF]->(e2),
+(e6)-[:FRIEND_OF]->(e9),(e6)-[:FRIEND_OF]->(e3),
+(e7)-[:FRIEND_OF]->(e14),(e7)-[:FRIEND_OF]->(e1),
+(e7)-[:FRIEND_OF]->(e15),(e7)-[:FRIEND_OF]->(e6),
+(e7)-[:FRIEND_OF]->(e16),(e7)-[:FRIEND_OF]->(e4),
+(e8)-[:FRIEND_OF]->(e13),(e8)-[:FRIEND_OF]->(e14),
+(e8)-[:FRIEND_OF]->(e12),(e8)-[:FRIEND_OF]->(e5),
+(e8)-[:FRIEND_OF]->(e11),(e8)-[:FRIEND_OF]->(e4),
+(e9)-[:FRIEND_OF]->(e8),(e9)-[:FRIEND_OF]->(e14),
+(e9)-[:FRIEND_OF]->(e7),(e9)-[:FRIEND_OF]->(e5),
+(e9)-[:FRIEND_OF]->(e6),(e9)-[:FRIEND_OF]->(e12),
+(e10)-[:FRIEND_OF]->(e3),(e10)-[:FRIEND_OF]->(e5),
+(e10)-[:FRIEND_OF]->(e2),(e10)-[:FRIEND_OF]->(e15),
+(e11)-[:FRIEND_OF]->(e3),(e11)-[:FRIEND_OF]->(e6),
+(e11)-[:FRIEND_OF]->(e4),(e11)-[:FRIEND_OF]->(e8),
+(e12)-[:FRIEND_OF]->(e4),(e12)-[:FRIEND_OF]->(e1),
+(e13)-[:FRIEND_OF]->(e8),(e13)-[:FRIEND_OF]->(e14),
+(e13)-[:FRIEND_OF]->(e7),(e13)-[:FRIEND_OF]->(e15),
+(e13)-[:FRIEND_OF]->(e16),(e13)-[:FRIEND_OF]->(e12),
+(e14)-[:FRIEND_OF]->(e7),(e14)-[:FRIEND_OF]->(e3),
+(e14)-[:FRIEND_OF]->(e8),(e14)-[:FRIEND_OF]->(e4),
+(e15)-[:FRIEND_OF]->(e1),(e15)-[:FRIEND_OF]->(e13),
+(e15)-[:FRIEND_OF]->(e3),(e15)-[:FRIEND_OF]->(e4),
+(e16)-[:FRIEND_OF]->(e9),(e16)-[:FRIEND_OF]->(e13),
+(e16)-[:FRIEND_OF]->(e10),(e16)-[:FRIEND_OF]->(e3);
+
+
+
+
+
+
+CREATE (tom:Person {name: "Tom", age: 28, country: "Spain", sport: "Football"})
+WITH tom
+MATCH (mary:Person {name: "Mary"})
+CREATE (mary)-[:FRIEND_OF]->(tom);
+
+
+CREATE (bill:Person {name: "Bill", age: 23, country: "Ireland"})
+WITH bill
+MATCH (mary:Person {name: "Mary"}), (denis:Person {name: "Denis"})
+CREATE (mary)-[:FRIEND_OF]->(bill), (denis)-[:FRIEND_OF]->(bill);
+
+
+// Show the age of Denis and his friends
+MATCH (denis:Person {name: "Denis"})-[:FRIEND_OF]->(friend)
+RETURN denis.age AS DenisAge, friend.name AS FriendName, friend.age AS FriendAge;
+
+// Show all the person from Scotland
+MATCH (person:Person {country: "Scotland"})
+RETURN person.name AS Name, person.age AS Age, person.sport AS Sport;
+
+// Show all the person with age less or equal than 20 from Ireland
+MATCH (person:Person {country: "Ireland"})
+WHERE person.age <= 20
+RETURN person.name AS Name, person.age AS Age;
+
+// Show all the person with age less or equal 30 playing football
+MATCH (person:Person {sport: "Football"})
+WHERE person.age <= 30
+RETURN person.name AS Name, person.age AS Age, person.country AS Country;
+
+// Count the person by country
+MATCH (person:Person)
+RETURN person.country AS Country, COUNT(person) AS Count;
+
+// Show the average age of the person group by sport
+MATCH (person:Person)
+RETURN person.sport AS Sport, AVG(person.age) AS AverageAge;
+
+// Show all the direct friends of Mary
+MATCH (mary:Person {name: "Mary"})-[:FRIEND_OF]->(friend)
+RETURN friend.name AS FriendName, friend.age AS FriendAge, friend.country AS Country;
+
+// Show all the friends of Paul with a maximum distance of 5 steps
+MATCH (paul:Person {name: "Paul"})-[:FRIEND_OF*..5]->(friend)
+RETURN DISTINCT friend.name AS FriendName, friend.country AS Country, friend.age AS FriendAge;
+
+// Count all the friends of Paul with maximum distance 5 steps by nationality
+MATCH (paul:Person {name: "Paul"})-[:FRIEND_OF*..5]->(friend)
+RETURN friend.country AS Country, COUNT(DISTINCT friend) AS FriendCount;
+
+// Show the path(s) between Paul and Lisa. For each path show the length. How many paths are there?
+MATCH path = (paul:Person {name: "Paul"})-[:FRIEND_OF*1..5]-(lisa:Person {name: "Lisa"})
+RETURN DISTINCT path, LENGTH(path) AS PathLength, COUNT(DISTINCT path) AS PathCount
+LIMIT 20;
+
+
+// Show the shortest path between Paul and Lisa
+MATCH path = shortestPath((paul:Person {name: "Paul"})-[:FRIEND_OF*]-(lisa:Person {name: "Lisa"}))
+RETURN path, LENGTH(path) AS PathLength;
+
+// Show a connection between Mary and all her friends, where the path can only contain persons that play football
+MATCH path = (mary:Person {name: "Mary"})-[:FRIEND_OF*]-(friend)
+WHERE friend.sport = "Football"
+RETURN DISTINCT friend.name AS FriendName;
